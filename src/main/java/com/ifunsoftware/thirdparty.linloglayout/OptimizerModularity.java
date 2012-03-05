@@ -16,6 +16,9 @@
 
 package com.ifunsoftware.thirdparty.linloglayout;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 
 /**
@@ -37,6 +40,8 @@ import java.util.*;
  */
 
 public class OptimizerModularity {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * Returns the negative modularity.
@@ -88,8 +93,9 @@ public class OptimizerModularity {
         // greedily move nodes between clusters 
         double prevQuality = Double.MAX_VALUE;
         double quality = quality(interAtedges, interAtpairs, atedges, atpairs);
-        System.out.println("Refining " + nodeToCluster.keySet().size() 
-                                       + " nodes, initial modularity " + -quality);
+        
+        logger.debug("Refining {} nodes, initial modularity {}", nodeToCluster.keySet().size(), -quality );
+        
         while (quality < prevQuality) {
             prevQuality = quality;
             for (Node node : nodeToCluster.keySet()) {
@@ -125,8 +131,10 @@ public class OptimizerModularity {
                     nodeToCluster.put(node, bestCluster);
                     maxCluster = Math.max(maxCluster, bestCluster);
                     quality = bestQuality; interAtedges = bestInterAtedges; interAtpairs = bestInterAtpairs;
-                    System.out.println(" Moving " + node + " to " + bestCluster + ", " 
-                            + "new modularity " + -quality);
+                    
+                    if(logger.isDebugEnabled()){
+                        logger.debug("Moving " + node + " to " + bestCluster + ", new modularity " + -quality);
+                    }
                 }
             }
         }
@@ -144,7 +152,7 @@ public class OptimizerModularity {
      */
     private Map<Node,Integer> cluster(final Collection<Node> nodes, final List<Edge> edges, 
             final double atedges, final double atpairs) {
-        System.out.println("Contracting " + nodes.size() + " nodes, " + edges.size() + " edges");
+        logger.debug("Contracting {} nodes, {} edges", nodes.size(), edges.size());
         
         // contract nodes
         Collections.sort(edges, new Comparator<Edge>() { 
@@ -162,7 +170,7 @@ public class OptimizerModularity {
             // randomize contraction
             // if (!nodeToContr.isEmpty() && Math.random() < 0.5) continue;
             
-            System.out.println(" Contracting " + edge);
+            logger.debug("Contracting {}", edge);
             Node contrNode = new Node(
                     edge.startNode.name + " " + edge.endNode.name,
                     edge.startNode.weight + edge.endNode.weight);
